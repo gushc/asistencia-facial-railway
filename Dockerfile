@@ -1,4 +1,4 @@
-ï»¿FROM python:3.9-slim
+FROM python:3.9-slim
 
 WORKDIR /app
 
@@ -12,13 +12,13 @@ RUN apt-get update && apt-get install -y \
 # Copiar requirements primero
 COPY requirements.txt .
 
-# Instalar dlib PRIMERO con versiÃ³n especÃ­fica
-RUN pip install --no-cache-dir --timeout 600 dlib==19.24.2
+# Instalar dlib PRIMERO con versión específica
+RUN pip install --no-cache-dir --timeout 600 dlib==19.22.0
 
 # Instalar el resto de dependencias
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copiar aplicaciÃ³n
+# Copiar aplicación
 COPY . .
 
 # Exponer puerto
