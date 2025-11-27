@@ -2,7 +2,7 @@
 
 WORKDIR /app
 
-# Solo dependencias ABSOLUTAMENTE necesarias
+# Solo dependencias MÍNIMAS necesarias
 RUN apt-get update && apt-get install -y \
     cmake \
     build-essential \
@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y \
 
 COPY requirements.txt .
 
-# ESTRATEGIA FREE TIER: Instalar en ORDEN específico
+# Instalar dependencias en orden óptimo
 RUN pip install --no-cache-dir --timeout 300 numpy==1.24.3
 RUN pip install --no-cache-dir --timeout 600 dlib==19.22.0
 RUN pip install --no-cache-dir -r requirements.txt
