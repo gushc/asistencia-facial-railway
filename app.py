@@ -1,4 +1,4 @@
-import os
+﻿import os
 import numpy as np
 import face_recognition
 from flask import Flask, render_template, request, jsonify, Response
