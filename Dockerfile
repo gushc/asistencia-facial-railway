@@ -1,25 +1,29 @@
-FROM python:3.9-slim
+﻿FROM python:3.9-slim
 
 WORKDIR /app
 
-# Dependencias m�nimas para dlib wheel
+# Instalar dependencias del sistema MÍNIMAS
 RUN apt-get update && apt-get install -y \
-    libgl1 \
-    libglib2.0-0 \
-    && rm -rf /var/lib/apt/lists/*
+    cmake \
+    g++ \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
+# Copiar requirements primero
 COPY requirements.txt .
 
-# Instalar dlib desde wheel (NO compilar)
-RUN pip install --no-cache-dir \
-    https://files.pythonhosted.org/packages/1a/42/f0e418cbff496d5f95c1deac1f1e099f3996bd6f66a701d89f5cb918416f/dlib-19.17.0-cp39-cp39-manylinux1_x86_64.whl
+# ESTRATEGIA: Instalar numpy PRIMERO (requerido por dlib)
+RUN pip install --no-cache-dir numpy==1.24.3
 
-# Instalar el resto
+# Instalar dlib con COMPILACIÓN PARALELA
+RUN pip install --no-cache-dir --timeout 1200 dlib==19.22.0
+
+# Instalar el resto de dependencias
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copiar aplicación
 COPY . .
 
 EXPOSE 10000
 
 CMD ["gunicorn", "--bind", "0.0.0.0:10000", "app:app"]
-# Build optimized with dlib wheel - 11/27/2025 02:47:05
