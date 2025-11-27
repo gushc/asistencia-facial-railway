@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Sistema de Asistencia por Reconocimiento Facial - Flask
 
 ## 📋 Descripción
@@ -15,3 +16,6 @@ Sistema web de reconocimiento facial para registro de asistencia, migrado a Flas
 ```bash
 git clone [url-del-repositorio]
 cd asistencia_facial_flask
+=======
+# asistencia-facial-railway
+>>>>>>> 0b92074397294645de7d1bdc5fedf06aa79146f2
