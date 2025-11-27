@@ -1,28 +1,31 @@
-FROM python:3.9-slim
+ÔªøFROM python:3.9-slim
 
 WORKDIR /app
 
-# Instalar dependencias del sistema
+# Instalar dependencias del sistema M√çNIMAS
 RUN apt-get update && apt-get install -y \
     cmake \
     g++ \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
-# Copiar requirements primero
+# Copiar requirements primero (para cache de Docker)
 COPY requirements.txt .
 
-# Instalar dlib PRIMERO con versiÛn especÌfica
-RUN pip install --no-cache-dir --timeout 600 dlib==19.22.0
+# ESTRATEGIA: Instalar numpy PRIMERO (requerido por dlib)
+RUN pip install --no-cache-dir numpy==1.24.3
+
+# Instalar dlib con COMPILACI√ìN PARALELA y timeout extendido
+RUN pip install --no-cache-dir --timeout 1200 dlib==19.22.0
 
 # Instalar el resto de dependencias
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copiar aplicaciÛn
+# Copiar la aplicaci√≥n
 COPY . .
 
 # Exponer puerto
 EXPOSE 10000
 
-# Comando de inicio
+# Comando para ejecutar
 CMD ["gunicorn", "--bind", "0.0.0.0:10000", "app:app"]
