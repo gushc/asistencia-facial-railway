@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultados de Asistencia</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Historial de Asistencias</h1>
+            <p class="subtitle">Registros del sistema de reconocimiento facial</p>
+        </header>
+
+        <div class="controls">
+            <a href="{{ url_for('index') }}" class="btn btn-primary">← Volver al Inicio</a>
+            <button id="btn-actualizar" class="btn btn-info">🔄 Actualizar Lista</button>
+            <button id="btn-exportar" class="btn btn-success">📥 Exportar CSV</button>
+        </div>
+
+        <div class="stats-panel">
+            <div class="stat-item">
+                <span class="stat-label">Total de Registros:</span>
+                <span id="total-registros" class="stat-value">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Registros Hoy:</span>
+                <span id="registros-hoy" class="stat-value">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Último Registro:</span>
+                <span id="ultimo-registro" class="stat-value">---</span>
+            </div>
+        </div>
+
+        <div class="results-container">
+            <div class="table-header">
+                <h3>📋 Lista Completa de Asistencias</h3>
+                <div class="filters">
+                    <input type="text" id="filtro-nombre" placeholder="Filtrar por nombre...">
+                    <input type="date" id="filtro-fecha">
+                </div>
+            </div>
+            
+            <div id="lista-asistencias" class="asistencias-list">
+                <!-- Las asistencias se cargarán aquí con JavaScript -->
+                <div class="loading">Cargando asistencias...</div>
+            </div>
+        </div>
+
+        <div class="export-section">
+            <h3>📤 Exportar Datos</h3>
+            <div class="export-options">
+                <button class="btn btn-outline" onclick="exportarJSON()">Exportar JSON</button>
+                <button class="btn btn-outline" onclick="imprimirLista()">🖨️ Imprimir Lista</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/resultados.js') }}"></script>
+</body>
+</html>
