@@ -1,11 +1,12 @@
 ﻿import os
 import numpy as np
-import face_recognition
 from flask import Flask, render_template, request, jsonify, Response
 from datetime import datetime
 import time
 import csv
 import warnings
+from PIL import Image, ImageDraw
+import io
 
 warnings.filterwarnings("ignore")
 
@@ -19,43 +20,25 @@ ultima_asistencia = ""
 estado_camara = "detenida"
 
 def inicializar_sistema():
-    """Inicializa el sistema optimizado para Free Tier"""
+    """Inicializa el sistema SIN face-recognition"""
     global lista_codificaciones, lista_nombres
     
     try:
-        print("Inicializando sistema de reconocimiento facial...")
+        print("Inicializando sistema de demostración...")
         
-        # Crear datos de demostración SIN descargar archivos grandes
+        # Crear datos de demostración SIN face-recognition
         print("Generando datos de demostración...")
         
-        # Generar encoding de ejemplo para demostración
-        try:
-            # Crear una imagen sintética simple
-            face_image = np.random.randint(0, 255, (100, 100, 3), dtype=np.uint8)
-            cods = face_recognition.face_encodings(face_image)
-            
-            if len(cods) > 0:
-                lista_codificaciones.append(cods[0])
-                lista_nombres.append("Usuario Demo")
-                print("✅ Encoding de demostración creado")
-            else:
-                # Fallback: crear array dummy
-                dummy_encoding = np.random.rand(128)
-                lista_codificaciones.append(dummy_encoding)
-                lista_nombres.append("Usuario Demo")
-                print("✅ Encoding dummy creado (modo fallback)")
-                
-        except Exception as e:
-            print(f"⚠️  Error creando encoding: {e}")
-            # Último fallback
-            lista_codificaciones.append(np.zeros(128))
-            lista_nombres.append("Usuario Demo")
+        # Encoding dummy para mantener la estructura
+        dummy_encoding = np.random.rand(128)
+        lista_codificaciones.append(dummy_encoding)
+        lista_nombres.append("Usuario Demo")
         
-        print(f"✅ Sistema inicializado: {len(lista_codificaciones)} persona registrada")
+        print("✅ Sistema de demostración inicializado")
         return True
         
     except Exception as e:
-        print(f"❌ Error crítico en inicialización: {e}")
+        print(f"❌ Error en inicialización: {e}")
         return False
 
 def registrar_asistencia(nombre):
@@ -63,12 +46,12 @@ def registrar_asistencia(nombre):
     global caras_registradas, ultima_asistencia
     
     if nombre != "Desconocido" and nombre not in caras_registradas:
-        archivo_asistencia = "asistencia.csv"
+        archivo_asistencia = "asistencia_version3.csv"
         
         try:
             file_exists = os.path.exists(archivo_asistencia)
             
-            with open(archivo_asistencia, "a", newline="", encoding='utf-8') as f:
+            with open(archivo_asistencia, "a", newline="", encoding="utf-8") as f:
                 writer = csv.writer(f)
                 if not file_exists:
                     writer.writerow(["Nombre", "Fecha", "Hora"])
@@ -90,7 +73,7 @@ def registrar_asistencia(nombre):
     return False
 
 def generar_frames():
-    """Genera frames simulados para Free Tier"""
+    """Genera frames simulados SIN OpenCV"""
     global estado_camara
     
     estado_camara = "activa"
@@ -98,42 +81,43 @@ def generar_frames():
     
     while estado_camara == "activa":
         try:
-            # Crear frame simulado (sin OpenCV)
-            height, width = 480, 640
+            # Crear frame simulado
+            width, height = 640, 480
             frame = np.zeros((height, width, 3), dtype=np.uint8)
             
             # Fondo azul
             frame[:, :] = [50, 50, 120]
             
-            # Texto informativo (simulado)
+            # Crear imagen PIL
+            pil_image = Image.fromarray(frame)
+            draw = ImageDraw.Draw(pil_image)
+            
+            # Texto informativo
             textos = [
                 "SISTEMA DE ASISTENCIA FACIAL - MODO DEMO",
                 f"Personas registradas: {len(lista_codificaciones)}",
                 f"Estado: {estado_camara.upper()}",
-                "Sistema funcionando en Render Free Tier",
-                "✅ Reconocimiento facial activo"
+                "Render Free Tier - Versión Ligera",
+                "✅ Sistema funcionando correctamente"
             ]
             
             # Simular detección periódica
             frame_count += 1
-            if frame_count % 50 == 0 and len(lista_codificaciones) > 0:
-                registrar_asistencia("Usuario Demo")
+            if frame_count % 30 == 0 and len(lista_nombres) > 0:
+                registrar_asistencia(lista_nombres[0])
             
-            # Codificar frame como JPEG (simplificado)
-            from PIL import Image, ImageDraw, ImageFont
-            pil_image = Image.fromarray(frame)
-            draw = ImageDraw.Draw(pil_image)
-            
-            # Agregar texto
+            # Agregar texto al frame
             y_offset = 50
             for texto in textos:
                 draw.text((30, y_offset), texto, fill=(255, 255, 255))
                 y_offset += 40
             
+            # Agregar contador
+            draw.text((30, height - 50), f"Frame: {frame_count}", fill=(255, 255, 255))
+            
             # Convertir a bytes
-            import io
             img_byte_arr = io.BytesIO()
-            pil_image.save(img_byte_arr, format='JPEG')
+            pil_image.save(img_byte_arr, format="JPEG", quality=85)
             frame_bytes = img_byte_arr.getvalue()
             
             yield (b'--frame\r\n'
@@ -164,7 +148,7 @@ def iniciar_reconocimiento():
     estado_camara = "activa"
     return jsonify({
         'status': 'success',
-        'message': 'Sistema de reconocimiento iniciado',
+        'message': 'Sistema de demostración iniciado',
         'personas_registradas': len(lista_codificaciones)
     })
 
@@ -181,8 +165,8 @@ def detener_reconocimiento():
 def obtener_asistencias():
     try:
         asistencias = []
-        if os.path.exists("asistencia.csv"):
-            with open("asistencia.csv", "r", encoding='utf-8') as f:
+        if os.path.exists("asistencia_version3.csv"):
+            with open("asistencia_version3.csv", "r", encoding="utf-8") as f:
                 reader = csv.DictReader(f)
                 asistencias = list(reader)
         return jsonify({'asistencias': asistencias})
@@ -205,10 +189,10 @@ def resultados():
 # ================= INICIALIZACIÓN =================
 
 if __name__ == '__main__':
-    print("🚀 Iniciando Sistema de Asistencia Facial - Render Free Tier")
+    print("🚀 Iniciando Sistema de Asistencia - Versión Ligera")
     
     if inicializar_sistema():
-        print("✅ Sistema listo para usar")
+        print("✅ Sistema de demostración listo")
     else:
         print("⚠️  Sistema en modo limitado")
     
