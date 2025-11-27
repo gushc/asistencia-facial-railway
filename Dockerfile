@@ -1,8 +1,8 @@
-﻿FROM python:3.9-slim
+FROM python:3.9-slim
 
 WORKDIR /app
 
-# Dependencias mínimas
+# Dependencias m�nimas para dlib wheel
 RUN apt-get update && apt-get install -y \
     libgl1 \
     libglib2.0-0 \
@@ -22,3 +22,4 @@ COPY . .
 EXPOSE 10000
 
 CMD ["gunicorn", "--bind", "0.0.0.0:10000", "app:app"]
+# Build optimized with dlib wheel - 11/27/2025 02:47:05
